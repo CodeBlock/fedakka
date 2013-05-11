@@ -1,0 +1,3 @@
+GET     /                              controllers.Application.index
+GET     /fedmsg.json                   controllers.Application.stream
+GET     /assets/*file                  controllers.Assets.at(path="/public", file)

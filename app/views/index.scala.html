@@ -1,0 +1,15 @@
+@(message: String)(implicit requestHeader: RequestHeader)
+
+@main("Welcome to Play 2.1") {
+<script>
+  $(function() {
+  ws = new WebSocket("@routes.Application.stream.webSocketURL()")
+  ws.onmessage = function(msg) {
+    message = JSON.parse(msg.data);
+    delete message['certificate'];
+    div = $('<pre />').addClass('message').text(JSON.stringify(message, null, 4));
+    $('body').prepend(div);
+  }
+});
+</script>
+}
