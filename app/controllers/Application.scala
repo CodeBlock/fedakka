@@ -20,7 +20,7 @@ object Application extends Controller {
 
   val zmq = ZeroMQExtension(Akka.system)
   val listener = Akka.system.actorOf(Props[Fedmsg], name = "fedmsg")
-  val pullSocket = zmq.newSocket(SocketType.Sub, Listener(listener), Connect("tcp://stg.fedoraproject.org:9940"), Subscribe("org.fedoraproject"))
+  val pullSocket = zmq.newSocket(SocketType.Sub, Listener(listener), Connect("tcp://hub.fedoraproject.org:9940"), Subscribe("org.fedoraproject"))
 
   def index = Action { implicit request =>
     Ok(views.html.index("Your new application is ready."))
