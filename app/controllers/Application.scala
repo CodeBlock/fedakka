@@ -20,7 +20,12 @@ object Application extends Controller {
 
   val zmq = ZeroMQExtension(Akka.system)
   val listener = Akka.system.actorOf(Props[Fedmsg], name = "fedmsg")
-  val pullSocket = zmq.newSocket(SocketType.Sub, Listener(listener), Connect("tcp://hub.fedoraproject.org:9940"), Subscribe("org.fedoraproject"))
+
+  val endpoint = s"tcp://${Play.configuration.getString("zeromq.endpoint")}"
+  val sub = Play.configuration.getString("zeromq.subscribe_to").map { s =>
+    Subscribe(s)
+  }.getOrElse(SubscribeAll)
+  val pullSocket = zmq.newSocket(SocketType.Sub, Listener(listener), Connect(endpoint), sub)
 
   def index = Action { implicit request =>
     Ok(views.html.index("Your new application is ready."))
