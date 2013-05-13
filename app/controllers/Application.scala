@@ -21,7 +21,7 @@ object Application extends Controller {
   val zmq = ZeroMQExtension(Akka.system)
   val listener = Akka.system.actorOf(Props[Fedmsg], name = "fedmsg")
 
-  val endpoint = s"tcp://${Play.configuration.getString("zeromq.endpoint")}"
+  val endpoint = s"tcp://${Play.configuration.getString("zeromq.endpoint").getOrElse("")}"
   val sub = Play.configuration.getString("zeromq.subscribe_to").map { s =>
     Subscribe(s)
   }.getOrElse(SubscribeAll)
