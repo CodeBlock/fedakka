@@ -1,6 +1,6 @@
 @(message: String)(implicit requestHeader: RequestHeader)
 
-@main("Welcome to Play 2.1") {
+@main {
 <script>
   $(function() {
   ws = new WebSocket("@routes.Application.stream.webSocketURL()")
