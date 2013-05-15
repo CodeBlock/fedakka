@@ -68,3 +68,5 @@
       with_items:
         - httpd
         - iptables
+        - carbon-cache
+        - carbon-aggregator
