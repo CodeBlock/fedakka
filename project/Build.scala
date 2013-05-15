@@ -9,6 +9,7 @@ object ApplicationBuild extends Build {
 
   val appDependencies = Seq(
     "com.typesafe.akka" %% "akka-zeromq" % "2.1.2",
+    "com.typesafe.play.plugins" %% "play-statsd" % "2.1.0",
     jdbc,
     anorm
   )
