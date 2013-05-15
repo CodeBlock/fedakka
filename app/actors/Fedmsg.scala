@@ -32,7 +32,7 @@ class Fedmsg extends Actor with ActorLogging {
     case m: ZMQMessage => {
       val message = s"${new String(m.payload(0))} ${new String(m.payload(1))}"
       channel.push(new String(m.payload(1)))
-      Statsd.increment(new String(m.payload(1)), value = 1)
+      Statsd.increment(new String(m.payload(0)), value = 1)
       log.info(message)
     }
     case e => log.info(e.toString)
