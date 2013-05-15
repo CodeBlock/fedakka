@@ -1,0 +1,70 @@
+- name: Deploy fedakka
+  user: root
+  hosts: $target
+  tasks:
+    - name: Install dependencies for metrics
+      yum: state=present name=$item
+      with_items:
+        - python-setuptools
+        - python-carbon
+        - python-bucky
+        - graphite-web
+        - graphite-web-selinux
+        - httpd
+
+    - name: Enable vhosting in apache
+      command: creates=/etc/httpd/conf.d/0vhost.conf echo 'NameVirtualHost *:80' > /etc/httpd/conf.d/0vhost.conf
+
+    - name: Configure graphite-web in Apache
+      template: src=files/graphite-web.conf dest=/etc/httpd/conf.d/graphite-web.conf
+
+    - name: Configure fedakka in Apache
+      template: src=files/fedakka.httpd.conf dest=/etc/httpd/conf.d/fedakka.conf
+
+    # TODO: Can probably ansibleize this instead of using shell.
+    - name: Create a file for the graphite-web database
+      shell: creates=/var/lib/graphite-web/graphite.db touch /var/lib/graphite-web/graphite.db && chown apache.apache /var/lib/graphite-web/graphite.db
+
+    - name: Initialize the graphite-web auth db
+      shell: yes no | python /usr/lib/python2.6/site-packages/graphite/manage.py syncdb
+
+    - name: Configure graphite-web
+      template: src=files/local_settings.py dest=/etc/graphite-web/local_settings.py
+
+    - name: Configure Bucky
+      template: src=files/bucky.conf dest=/etc/bucky/bucky.conf
+
+    - name: Add Bucky, FedAkka to upstart
+      template: src=files/$item.init.conf dest=/etc/init/$item.conf
+      with_items:
+        - bucky
+        - fedakka
+
+    # TODO: package this one day?
+    - name: Get SBT rpm
+      command: creates=/root/sbt.rpm curl -Lo /root/sbt.rpm http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.12.3/sbt.rpm
+
+    - name: Install dependencies for fedakka
+      yum: state=present name=$item
+      with_items:
+        - java-1.7.0-openjdk
+        - java-1.7.0-openjdk-devel
+        - /root/sbt.rpm
+
+    - name: Pull latest Fedakka code
+      git: repo=git://github.com/CodeBlock/fedakka.git dest=/srv/www/fedakka
+
+    - name: Set iptables
+      template: src=files/iptables dest=/etc/sysconfig/iptables
+
+    - name: Start Bucky
+      command: restart bucky
+
+    - name: Start FedAkka
+      command: restart fedakka
+
+    - name: Restart services
+      shell: systemctl restart $item.service && systemctl enable $item.service
+      with_items:
+        - httpd
+        - iptables
